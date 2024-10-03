@@ -27,6 +27,8 @@ export default function App() {
     open: false,
   });
 
+  console.log('[BAKOSAFE_TESTE]');
+
   return (
     <main
       data-theme="dark"
