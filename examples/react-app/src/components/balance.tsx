@@ -1,33 +1,44 @@
 import { bn } from 'fuels';
-import { useEffect } from 'react';
+import { useConfig } from '../context/ConfigContext';
 import { useWallet } from '../hooks/useWallet';
+import { Faucet } from './faucet';
 import Feature from './feature';
 
-export const DEFAULT_AMOUNT = bn.parseUnits('0.0001');
+interface Props {
+  isSigning: boolean;
+  setIsSigning: (isSigning: boolean) => void;
+}
 
 const BalanceSkeleton = () => (
   <div className="h-6 w-28 animate-pulse bg-gray-800" />
 );
 
-export default function Balance() {
-  const { refetchWallet, balance, address } = useWallet();
+export default function Balance({ isSigning }: Props) {
+  const { chainIdName, assetSymbol } = useConfig();
+  const { balance, account, isConnected } = useWallet();
 
-  useEffect(() => {
-    const interval = setInterval(() => refetchWallet(), 5000);
-    return () => clearInterval(interval);
-  }, [refetchWallet]);
+  if (!account && isConnected) {
+    return (
+      <Feature title="Balance">
+        <code>
+          {bn(0).format()} ${assetSymbol}
+        </code>
+        <Faucet isSigning={isSigning} address={account || ''} disabled={true} />
+      </Feature>
+    );
+  }
+  if (!account) return null;
 
   return (
     <Feature title="Balance">
-      <code>{balance ? `${balance?.format()} ETH` : <BalanceSkeleton />}</code>
-      <a
-        href={`https://faucet-beta-5.fuel.network/?address=${address}`}
-        target="_blank"
-        className="btn btn-primary"
-        rel="noreferrer"
-      >
-        Get coins
-      </a>
+      <code>
+        {balance ? `${balance?.format()} ${assetSymbol}` : <BalanceSkeleton />}
+      </code>
+      <Faucet
+        isSigning={isSigning}
+        address={account}
+        disabled={chainIdName === 'mainnet'}
+      />
     </Feature>
   );
 }

@@ -19,6 +19,9 @@
       },
       "complexity": {
         "noForEach": "off"
+      },
+      "suspicious": {
+        "noAsyncPromiseExecutor": "off"
       }
     }
   },
@@ -43,7 +46,11 @@
       "**/.turbo",
       "**/build",
       "**/contracts",
-      "pnpm-lock.yaml"
+      "pnpm-lock.yaml",
+      "**/examples/react-app/src/types",
+      "**/examples/react-next/.next",
+      "**/factories/**/*.ts",
+      "**/.vitepress"
     ]
   }
 }

@@ -1,83 +1,63 @@
 import {
-  useAccounts,
+  useAccount,
   useBalance,
   useConnectUI,
-  useFuel,
+  useCurrentConnector,
   useWallet as useFuelWallet,
-  useIsConnected,
 } from '@fuels/react';
-import { useEffect, useState } from 'react';
-
-interface ICurrentConnector {
-  logo: string;
-  title: string;
-}
-
-const DEFAULT_CONNECTOR: ICurrentConnector = {
-  logo: '',
-  title: 'Wallet Demo',
-};
+import { useConfig } from '../context/ConfigContext';
+import { getConnectorLogo } from '../utils/getConnectorInfo';
 
 export const useWallet = () => {
-  const { fuel } = useFuel();
-  const { connect, isConnecting } = useConnectUI();
-  const { isConnected, refetch: refetchConnected } = useIsConnected();
+  const { assetId } = useConfig();
   const {
-    accounts,
-    isLoading: isLoadingAccounts,
-    isFetching: isFetchingAccounts,
-  } = useAccounts();
-
-  const address = accounts[0];
-  const { wallet, refetch: refetchWallet } = useFuelWallet(address);
-
+    connect,
+    isConnected,
+    isConnecting,
+    isLoading: isLoadingConnectors,
+  } = useConnectUI();
+  const { currentConnector: _currentConnector } = useCurrentConnector();
+  const connectImage = _currentConnector
+    ? getConnectorLogo(_currentConnector)
+    : '';
+  const currentConnector = {
+    logo: connectImage,
+    name: _currentConnector?.name ?? 'Wallet Demo',
+    connector: _currentConnector,
+  };
+  const {
+    account,
+    isLoading: isLoadingAccount,
+    isFetching: isFetchingAccount,
+  } = useAccount();
   const {
     balance,
     isLoading: isLoadingBalance,
     isFetching: isFetchingBalance,
-  } = useBalance({ address });
-
-  const [currentConnector, setCurrentConnector] =
-    useState<ICurrentConnector>(DEFAULT_CONNECTOR);
-
-  useEffect(() => {
-    refetchConnected();
-  }, [refetchConnected]);
-
-  useEffect(() => {
-    if (!isConnected) {
-      setCurrentConnector(DEFAULT_CONNECTOR);
-      return;
-    }
-
-    const currentConnector = fuel.currentConnector();
-
-    const title = currentConnector?.name ?? DEFAULT_CONNECTOR.title;
-
-    const logo =
-      currentConnector && typeof currentConnector.metadata?.image === 'object'
-        ? currentConnector.metadata.image.dark ?? ''
-        : (currentConnector?.metadata?.image as string) ?? '';
-
-    setCurrentConnector({ logo, title });
-  }, [fuel.currentConnector, isConnected]);
-
-  const isLoading = [isLoadingAccounts, isLoadingBalance].some(Boolean);
-
-  const isFetching = [isFetchingAccounts, isFetchingBalance].some(Boolean);
+    refetch: refetchBalance,
+  } = useBalance({
+    account,
+    assetId,
+    query: {
+      refetchInterval: 5000,
+      refetchOnWindowFocus: true,
+    },
+  });
+  const { wallet } = useFuelWallet({ account });
+  const isLoading = [isLoadingAccount, isLoadingBalance].some(Boolean);
+  const isFetching = [isFetchingAccount, isFetchingBalance].some(Boolean);
 
   return {
-    address,
-    accounts,
+    account,
     balance,
     currentConnector,
     isConnected,
     isConnecting,
     isLoading,
     isFetching,
+    isLoadingConnectors,
     wallet,
     connect,
-    refetchConnected,
-    refetchWallet,
+    refetchBalance,
   };
 };
