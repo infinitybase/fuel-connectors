@@ -1,5 +1,5 @@
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const CHANGESET_CONFIG_PATH = '.changeset/config.json';
@@ -19,7 +19,7 @@ interface PackageInfo {
  */
 function findPackageJsonFiles(
   dir: string,
-  ignorePatterns: string[] = IGNORE_PATTERNS
+  ignorePatterns: string[] = IGNORE_PATTERNS,
 ): string[] {
   const files: string[] = [];
 
@@ -66,12 +66,12 @@ const packages: PackageInfo[] = packageFiles
   // Filter out private packages (except templates if any)
   .filter(
     (pkg: PackageInfo) =>
-      !pkg.contents.private || pkg.path.includes('templates')
+      !pkg.contents.private || pkg.path.includes('templates'),
   );
 
 // Update all "private" `package.json` files to be public
 const privatePackages = packages.filter(
-  (pkg: PackageInfo) => pkg.contents.private
+  (pkg: PackageInfo) => pkg.contents.private,
 );
 for (const pkg of privatePackages) {
   const contents = { ...pkg.contents, private: false };
@@ -84,13 +84,13 @@ for (const pkg of privatePackages) {
  */
 const packageNames = packages.map((pkg: PackageInfo) => pkg.contents.name);
 const changesetConfigContents = JSON.parse(
-  readFileSync(CHANGESET_CONFIG_PATH, 'utf-8')
+  readFileSync(CHANGESET_CONFIG_PATH, 'utf-8'),
 );
 const changesetConfig = {
   ...changesetConfigContents,
   ignore: [
     ...changesetConfigContents.ignore.filter(
-      (ignorePackageName: string) => !packageNames.includes(ignorePackageName)
+      (ignorePackageName: string) => !packageNames.includes(ignorePackageName),
     ),
   ],
 };
@@ -101,7 +101,7 @@ execSync(`git add ${CHANGESET_CONFIG_PATH}`);
  * Add a changeset to bump all package versions
  */
 const packagesToBump = packages.map(
-  (pkg: PackageInfo) => `"${pkg.contents.name}": patch`
+  (pkg: PackageInfo) => `"${pkg.contents.name}": patch`,
 );
 const output = `---\n${packagesToBump.join('\n')}\n---\n\nincremental\n`;
 writeFileSync('.changeset/fuel-wallet-ci.md', output);

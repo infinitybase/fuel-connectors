@@ -1,7 +1,7 @@
+import { execSync } from 'node:child_process';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { getInfo } from '@changesets/get-github-info';
-import { execSync } from 'node:child_process';
 
 import { getFullChangelog } from './get-full-changelog.mjs';
 
@@ -119,7 +119,7 @@ await (async () => {
 
   if (['true', 'false'].indexOf(PUBLISHED ?? '') === -1) {
     core.setFailed(
-      'Please add PUBLISHED to the environment. Valid values are: true, false'
+      'Please add PUBLISHED to the environment. Valid values are: true, false',
     );
     return;
   }

@@ -1,9 +1,9 @@
+import { execSync } from 'node:child_process';
+import { join } from 'node:path';
 import * as github from '@actions/github';
 import { getInfo } from '@changesets/get-github-info';
 import getChangesets from '@changesets/read';
 import type { NewChangeset } from '@changesets/types';
-import { execSync } from 'node:child_process';
-import { join } from 'node:path';
 
 type Octokit = ReturnType<typeof github.getOctokit>;
 
@@ -24,14 +24,14 @@ const prTypes = ['feat', 'fix', 'refactor', 'chore', 'docs'];
 
 async function getChangelogInfo(
   octokit: Octokit,
-  changeset: NewChangeset
+  changeset: NewChangeset,
 ): Promise<ChangelogInfo | undefined> {
   const changesetCommit = execSync(
     `git log -n 1 --diff-filter=A --oneline --pretty=format:%H -- ${join(
       process.cwd(),
       '.changeset',
-      `${changeset.id}.md`
-    )}`
+      `${changeset.id}.md`,
+    )}`,
   ).toString(); // e.g. d603eecd1e453c60fe8cadfd1bfe530050ff0cfe
 
   const {
@@ -67,7 +67,9 @@ async function getChangelogInfo(
 
   const titleDescription = title.replace(/\w+!?:(.*)/, '$1').trim(); // chore!: add something -> add something
 
-  const bulletPoint = `- ${formattedPrLink} - ${capitalize(titleDescription)}, by ${user}`;
+  const bulletPoint = `- ${formattedPrLink} - ${capitalize(
+    titleDescription,
+  )}, by ${user}`;
 
   const breakingChangesRegex =
     /[\s\S]+# Breaking Changes([\s\S]+)# Checklist[\s\S]+/m;
@@ -79,7 +81,9 @@ async function getChangelogInfo(
   const releaseNotes = releaseNotesRegex.exec(body ?? '')?.[1].trim() ?? '';
 
   const prLink = formattedPrLink?.replace(/.*\((.*)\)/, '$1'); // [#2637](https://github.com/FuelLabs/fuels-ts/pull/2637) -> https://github.com/FuelLabs/fuels-ts/pull/2637
-  const migrationNote = `### [#${prNo} - ${capitalize(titleDescription)}](${prLink})
+  const migrationNote = `### [#${prNo} - ${capitalize(
+    titleDescription,
+  )}](${prLink})
 
   ${breakingChanges}`;
 
@@ -111,12 +115,12 @@ function sortChangelogsByPrType(a: ChangelogInfo, b: ChangelogInfo) {
 
 async function getChangelogs(octokit: Octokit, changesets: NewChangeset[]) {
   const changesetsWithReleases = changesets.filter(
-    (x) => x.releases.length > 0
+    (x) => x.releases.length > 0,
   );
   const changelogs = await Promise.all(
     changesetsWithReleases.map(async (changeset) =>
-      getChangelogInfo(octokit, changeset)
-    )
+      getChangelogInfo(octokit, changeset),
+    ),
   );
 
   return changelogs.filter((c) => c !== undefined).sort(sortChangelogsByPrType);
@@ -145,14 +149,14 @@ function groupChangelogsForListing(changelogs: ChangelogInfo[]) {
       acc[prType] = changelogs.filter((c) => c.prType === prType);
       return acc;
     },
-    {} as Record<string, ChangelogInfo[]>
+    {} as Record<string, ChangelogInfo[]>,
   );
 
   return Object.entries(prTypeWithChangelogs)
     .filter(([, c]) => c.length > 0)
     .map(
       ([prType, c]) =>
-        [mapPrTypeToTitle(prType), c] as [string, ChangelogInfo[]]
+        [mapPrTypeToTitle(prType), c] as [string, ChangelogInfo[]],
     );
 }
 
@@ -165,13 +169,13 @@ function listReleaseNotes(changelogs: ChangelogInfo[]) {
 
 function listBreakingMd(changelogs: ChangelogInfo[]) {
   const changelogGroups = groupChangelogsForListing(
-    changelogs.filter((x) => x.isBreaking)
+    changelogs.filter((x) => x.isBreaking),
   );
 
   return changelogGroups
     .map(
       ([groupTitle, c]) => `- ${groupTitle}
-${c.map((changelog) => `    ${changelog.views.bulletPoint}`).join('\n')}`
+${c.map((changelog) => `    ${changelog.views.bulletPoint}`).join('\n')}`,
     )
     .join('\n')
     .trim();
@@ -179,13 +183,13 @@ ${c.map((changelog) => `    ${changelog.views.bulletPoint}`).join('\n')}`
 
 function listMigrationNotes(changelogs: ChangelogInfo[]) {
   const changelogGroups = groupChangelogsForListing(
-    changelogs.filter((x) => x.isBreaking)
+    changelogs.filter((x) => x.isBreaking),
   );
 
   return changelogGroups
     .map(
       ([groupTitle, c]) => `## ${groupTitle}
-${c.map((changelog) => changelog.views.migrationNote).join('\n')}`
+${c.map((changelog) => changelog.views.migrationNote).join('\n')}`,
     )
     .join('\n\n')
     .trim();
@@ -193,13 +197,13 @@ ${c.map((changelog) => changelog.views.migrationNote).join('\n')}`
 
 function listNonBreakingMd(changelogs: ChangelogInfo[]) {
   const changelogGroups = groupChangelogsForListing(
-    changelogs.filter((x) => !x.isBreaking)
+    changelogs.filter((x) => !x.isBreaking),
   );
 
   return changelogGroups
     .map(
       ([groupTitle, c]) => `# ${groupTitle}
-${c.map((changelog) => changelog.views.bulletPoint).join('\n')}`
+${c.map((changelog) => changelog.views.bulletPoint).join('\n')}`,
     )
     .join('\n\n')
     .trim();
