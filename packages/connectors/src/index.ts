@@ -7,3 +7,6 @@ export * from '@fuel-connectors/bako-safe';
 export * from '@fuel-connectors/burner-wallet-connector';
 export * from '@fuel-connectors/walletconnect-connector';
 export * from '@fuel-connectors/solana-connector';
+// TEMP: re-export base predicate connector for dapps/examples local development
+export * from '@fuel-connectors/bako-predicate-connector';
+export * from '@fuel-connectors/social-connector';
