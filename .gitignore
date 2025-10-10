@@ -42,3 +42,5 @@ e2e-tests/runner/src/contracts/
 e2e-tests/runner/src/contracts/contract-ids.json
 /packages/evm-predicates/src/generated
 /packages/evm-predicates/predicate/out
+
+.context
