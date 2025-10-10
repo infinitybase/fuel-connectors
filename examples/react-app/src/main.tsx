@@ -1,8 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { counter as COUNTER_CONTRACT_ID_LOCAL } from './types/contract-ids-local.json';
-import { counter as COUNTER_CONTRACT_ID_MAINNET } from './types/contract-ids-mainnet.json';
-import { counter as COUNTER_CONTRACT_ID_TESTNET } from './types/contract-ids-testnet.json';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -11,8 +8,13 @@ import { coinbaseWallet, walletConnect } from '@wagmi/connectors';
 import { http, createConfig, injected } from '@wagmi/core';
 import { mainnet, sepolia } from '@wagmi/core/chains';
 
+import { EthereumWalletConnectors } from '@dynamic-labs/ethereum';
+import { DynamicContextProvider } from '@dynamic-labs/sdk-react-core';
 import { defaultConnectors } from '@fuels/connectors';
 import { FuelProvider, type NetworkConfig } from '@fuels/react';
+import { WagmiProvider } from 'wagmi';
+import { SocialConnector as LocalSocialConnector } from './connector/social';
+import { dynamicEventRouter } from './connector/social/DynamicEventRouter';
 
 import * as Toast from '@radix-ui/react-toast';
 
@@ -90,6 +92,11 @@ const FUEL_CONFIG: FuelConfig = {
   }),
 };
 
+// Inject local SocialConnector to the beginning for testing
+FUEL_CONFIG.connectors?.unshift(
+  new LocalSocialConnector({ fuelProvider: new Provider(PROVIDER_URL) }),
+);
+
 const config: Config = {
   explorerUrl: EXPLORER_URL,
   providerUrl: PROVIDER_URL,
@@ -103,18 +110,44 @@ const config: Config = {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <FuelProvider theme="dark" networks={NETWORKS} fuelConfig={FUEL_CONFIG}>
-        <ConfigProvider config={config}>
-          <Toast.Provider>
-            <App />
-            <Toast.Viewport
-              id="toast-viewport"
-              className="fixed bottom-0 right-0 z-[100] m-0 flex w-[420px] max-w-[100vw] list-none flex-col gap-[10px] p-[var(--viewport-padding)] outline-none [--viewport-padding:_25px]"
-            />
-          </Toast.Provider>
-        </ConfigProvider>
-        <ScreenSizeIndicator />
-      </FuelProvider>
+      <DynamicContextProvider
+        settings={{
+          // environmentId: '900fba82-9069-46df-9a1a-ca4e3787ec92',
+          environmentId: '1db47cdc-383c-45e2-af38-7cb8dd8d1e4c',
+          initialAuthenticationMode: 'connect-and-sign',
+          walletConnectors: [EthereumWalletConnectors],
+          debugError: true,
+          logLevel: 'DEBUG',
+          events: {
+            onAuthFlowOpen: () => dynamicEventRouter.onAuthFlowOpen(),
+            onAuthFlowClose: () => dynamicEventRouter.onAuthFlowClose(),
+            onAuthSuccess: (args) => dynamicEventRouter.onAuthSuccess(args),
+            onEmbeddedWalletCreated: (wallet) =>
+              dynamicEventRouter.onEmbeddedWalletCreated(wallet),
+            onWalletAdded: (wallet) => dynamicEventRouter.onWalletAdded(wallet),
+            onLogout: (args) => dynamicEventRouter.onLogout(args),
+          },
+        }}
+      >
+        <WagmiProvider config={wagmiConfig}>
+          <FuelProvider
+            theme="dark"
+            networks={NETWORKS}
+            fuelConfig={FUEL_CONFIG}
+          >
+            <ConfigProvider config={config}>
+              <Toast.Provider>
+                <App />
+                <Toast.Viewport
+                  id="toast-viewport"
+                  className="fixed bottom-0 right-0 z-[100] m-0 flex w-[420px] max-w-[100vw] list-none flex-col gap-[10px] p-[var(--viewport-padding)] outline-none [--viewport-padding:_25px]"
+                />
+              </Toast.Provider>
+            </ConfigProvider>
+            <ScreenSizeIndicator />
+          </FuelProvider>
+        </WagmiProvider>
+      </DynamicContextProvider>
 
       {isDev && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
