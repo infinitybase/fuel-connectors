@@ -176,7 +176,9 @@ export abstract class PredicateConnector extends FuelConnector {
 
       const { tx, hashTxId, encodedTxId } =
         await vault.BakoTransfer(transaction);
-      const signature = await this._sign_message(encodedTxId);
+
+      console.log('[CONNECTOR] Encoding transaction:', encodedTxId, hashTxId);
+      const signature = await this._sign_message(hashTxId);
       const encodedSignature = encodeSignature(
         evmAddress,
         signature,

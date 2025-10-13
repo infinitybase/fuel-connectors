@@ -52,5 +52,40 @@ export function DynamicListener() {
     }
   }, [primaryWallet, user]);
 
+  // // Escuta: requestSignMessage → assina mensagem
+  useEffect(() => {
+    if (!primaryWallet) return;
+
+    const handler = async (e: Event) => {
+      const customEvent = e as CustomEvent;
+      console.log('[Listener] Sign message request:', customEvent);
+      const { message } = customEvent.detail;
+
+      console.log('[Listener] Sign message request:', message);
+
+      try {
+        // Assina mensagem via wallet
+        const signature = await primaryWallet.signMessage(message);
+        console.log('[Listener] Message signed:', signature);
+
+        window.dispatchEvent(
+          new CustomEvent('dynamicMessageSigned', {
+            detail: { signature },
+          }),
+        );
+      } catch (err) {
+        console.error('[Listener] Failed to sign message:', err);
+        window.dispatchEvent(
+          new CustomEvent('dynamicMessageSigned', {
+            detail: { error: err },
+          }),
+        );
+      }
+    };
+
+    window.addEventListener('requestSignMessage', handler);
+    return () => window.removeEventListener('requestSignMessage', handler);
+  }, [primaryWallet]);
+
   return null;
 }

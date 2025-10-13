@@ -8,7 +8,6 @@ import {
   type ProviderDictionary,
 } from '@fuels/connectors';
 import { Address, type ConnectorMetadata, Provider } from 'fuels';
-import { dynamicEventRouter } from './DynamicEventRouter';
 
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
@@ -133,8 +132,47 @@ export class SocialConnector extends PredicateConnector {
     }
   }
 
-  protected async _sign_message(_message: string): Promise<string> {
-    throw new Error('Not implemented in example');
+  protected async _sign_message(message: string): Promise<string> {
+    try {
+      console.log('SocialConnector: signing message via Dynamic...', message);
+
+      // default message to sign: (32ff475e93eb7be2253269bcb88ac637cd31f1585e46e00c94ec8eda9e765d03)
+      // 0x35663564313332373165336465366139353666623133343432616464356339613862303136633962626234363239653831613539303333386135376136383166
+
+      // Dispara evento para Dynamic assinar mensagem
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          window.removeEventListener('dynamicMessageSigned', handler);
+          reject(new Error('Sign message timeout'));
+        }, 60_000);
+
+        const handler = (e: Event) => {
+          const customEvent = e as CustomEvent;
+          const { signature } = customEvent.detail;
+
+          clearTimeout(timeout);
+          window.removeEventListener('dynamicMessageSigned', handler);
+          resolve(signature);
+        };
+
+        window.addEventListener('dynamicMessageSigned', handler);
+
+        // Solicita assinatura via evento (mensagem exata, sem modificação)
+        window.dispatchEvent(
+          new CustomEvent('requestSignMessage', {
+            detail: {
+              message,
+            },
+          }),
+        );
+      });
+    } catch (error) {
+      console.error(
+        'SocialConnector: signing message via Dynamic error:',
+        error,
+      );
+      throw error;
+    }
   }
 
   protected getWalletAdapter(): PredicateWalletAdapter {
