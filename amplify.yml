@@ -6,6 +6,9 @@ frontend:
         # Instalar pnpm
         - npm install -g pnpm@9.5.0
         
+        # Aumentar limite de memória do Node.js
+        - export NODE_OPTIONS="--max-old-space-size=6144"
+        
         # Instalar todas as dependências do workspace
         - pnpm install --frozen-lockfile
         
