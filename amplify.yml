@@ -1,0 +1,34 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Instalar pnpm
+        - npm install -g pnpm@9.5.0
+        
+        # Instalar todas as dependências do workspace
+        - pnpm install --frozen-lockfile
+        
+    build:
+      commands:
+        # Build dos pacotes do workspace necessários (em ordem de dependência)
+        - pnpm --filter @fuels/connectors build
+        - pnpm --filter @fuel-connectors/bako-predicate-connector build
+        - pnpm --filter @fuels/react build
+        
+        # Build do react-app
+        - pnpm --filter react-app build
+        
+  artifacts:
+    # Diretório onde estão os arquivos buildados
+    baseDirectory: examples/react-app/dist
+    files:
+      - '**/*'
+      
+  cache:
+    paths:
+      # Cache dos node_modules para acelerar builds futuros
+      - node_modules/**/*
+      - packages/*/node_modules/**/*
+      - examples/react-app/node_modules/**/*
+
