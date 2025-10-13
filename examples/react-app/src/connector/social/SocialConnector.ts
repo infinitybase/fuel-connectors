@@ -9,6 +9,8 @@ import {
 } from '@fuels/connectors';
 import { Address, type ConnectorMetadata, Provider } from 'fuels';
 
+const STORAGE_KEY = 'social-connector-evm-address';
+
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
   fuelProvider?: Provider;
@@ -38,6 +40,18 @@ export class SocialConnector extends PredicateConnector {
   constructor(config: SocialConnectorConfig = {}) {
     super();
     this.config = config;
+
+    // Restaurar endereço do localStorage ao inicializar
+    if (typeof window !== 'undefined') {
+      const savedAddress = localStorage.getItem(STORAGE_KEY);
+      if (savedAddress) {
+        this.evmAddress = savedAddress;
+        console.log(
+          '[SocialConnector] Restored address from storage:',
+          savedAddress,
+        );
+      }
+    }
   }
 
   protected async _config_providers(_config: ConnectorConfig) {
@@ -61,14 +75,28 @@ export class SocialConnector extends PredicateConnector {
     return this.evmAddress;
   }
 
-  protected async _require_connection(): Promise<void> {
-    if (!this._get_current_evm_address()) {
-      throw new Error('No connected accounts');
+  protected async requireConnection(): Promise<void> {
+    // Tentar restaurar conexão do localStorage se não houver endereço
+    if (!this.evmAddress && typeof window !== 'undefined') {
+      const savedAddress = localStorage.getItem(STORAGE_KEY);
+      if (savedAddress) {
+        this.evmAddress = savedAddress;
+        console.log(
+          '[SocialConnector] Auto-reconnected from storage:',
+          savedAddress,
+        );
+
+        // Emitir evento de reconexão
+        const b256 = new Address(this.evmAddress).toB256();
+        this.emitAccountChange(b256, true);
+      }
     }
+
+    // Não lança erro aqui - deixa o fluxo de connect() acontecer naturalmente
   }
 
-  protected async requireConnection(): Promise<void> {
-    return this._require_connection();
+  protected async _require_connection(): Promise<void> {
+    return this.requireConnection();
   }
 
   protected async _connect(): Promise<boolean> {
@@ -95,6 +123,13 @@ export class SocialConnector extends PredicateConnector {
             reject(new Error('No EVM address received'));
             return;
           }
+
+          // Persistir endereço no localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(STORAGE_KEY, this.evmAddress);
+            console.log('[SocialConnector] Saved address to storage');
+          }
+
           const b256 = new Address(this.evmAddress).toB256();
           this.emitAccountChange(b256, true);
 
@@ -118,6 +153,12 @@ export class SocialConnector extends PredicateConnector {
 
     // Dispara evento para Dynamic fazer logout
     window.dispatchEvent(new CustomEvent('dynamicLogout'));
+
+    // Limpar localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+      console.log('[SocialConnector] Cleared storage on disconnect');
+    }
 
     this.cleanupAuthListener();
     this.evmAddress = null;
