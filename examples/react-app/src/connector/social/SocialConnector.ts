@@ -9,7 +9,15 @@ import {
 } from '@fuels/connectors';
 import { Address, type ConnectorMetadata, Provider } from 'fuels';
 
-const STORAGE_KEY = 'social-connector-evm-address';
+// Prefixo para todas as chaves do localStorage deste connector
+const STORAGE_PREFIX = 'SOCIAL_';
+
+// Chaves de armazenamento com prefixo
+const STORAGE_KEYS = {
+  EVM_ADDRESS: `${STORAGE_PREFIX}evm_address`,
+  DYNAMIC_SESSION: `${STORAGE_PREFIX}dynamic_session`,
+  LAST_CONNECTION: `${STORAGE_PREFIX}last_connection`,
+} as const;
 
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
@@ -43,7 +51,7 @@ export class SocialConnector extends PredicateConnector {
 
     // Restaurar endereço do localStorage ao inicializar
     if (typeof window !== 'undefined') {
-      const savedAddress = localStorage.getItem(STORAGE_KEY);
+      const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
         console.log(
@@ -78,7 +86,7 @@ export class SocialConnector extends PredicateConnector {
   protected async requireConnection(): Promise<void> {
     // Tentar restaurar conexão do localStorage se não houver endereço
     if (!this.evmAddress && typeof window !== 'undefined') {
-      const savedAddress = localStorage.getItem(STORAGE_KEY);
+      const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
         console.log(
@@ -120,7 +128,7 @@ export class SocialConnector extends PredicateConnector {
         // Limpar estado antigo
         this.evmAddress = null;
         if (typeof window !== 'undefined') {
-          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(STORAGE_KEYS.EVM_ADDRESS);
         }
       }
 
@@ -149,7 +157,7 @@ export class SocialConnector extends PredicateConnector {
 
           // Persistir endereço no localStorage
           if (typeof window !== 'undefined') {
-            localStorage.setItem(STORAGE_KEY, this.evmAddress);
+            localStorage.setItem(STORAGE_KEYS.EVM_ADDRESS, this.evmAddress);
             console.log('[SocialConnector] Saved address to storage');
           }
 
@@ -197,16 +205,40 @@ export class SocialConnector extends PredicateConnector {
     // Dispara evento para Dynamic fazer logout
     window.dispatchEvent(new CustomEvent('dynamicLogout'));
 
-    // Limpar localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-      console.log('[SocialConnector] Cleared storage on disconnect');
-    }
+    // Limpar TODAS as chaves com prefixo SOCIAL_ do localStorage
+    this.clearAllStorageKeys();
 
     this.cleanupAuthListener();
     this.evmAddress = null;
     this.emitAccountChange(null, false);
     return true;
+  }
+
+  /**
+   * Limpa todas as chaves do localStorage que começam com o prefixo SOCIAL_
+   */
+  private clearAllStorageKeys(): void {
+    if (typeof window === 'undefined') return;
+
+    const keysToRemove: string[] = [];
+
+    // Iterar por todas as chaves do localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(STORAGE_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    // Remover todas as chaves encontradas
+    keysToRemove.forEach((key) => {
+      localStorage.removeItem(key);
+      console.log(`[SocialConnector] Removed storage key: ${key}`);
+    });
+
+    console.log(
+      `[SocialConnector] Cleared ${keysToRemove.length} storage keys with prefix ${STORAGE_PREFIX}`,
+    );
   }
 
   private cleanupAuthListener() {
@@ -219,10 +251,6 @@ export class SocialConnector extends PredicateConnector {
   protected async _sign_message(message: string): Promise<string> {
     try {
       console.log('SocialConnector: signing message via Dynamic...', message);
-
-      // default message to sign: (32ff475e93eb7be2253269bcb88ac637cd31f1585e46e00c94ec8eda9e765d03)
-      // 0x35663564313332373165336465366139353666623133343432616464356339613862303136633962626234363239653831613539303333386135376136383166
-
       // Dispara evento para Dynamic assinar mensagem
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
