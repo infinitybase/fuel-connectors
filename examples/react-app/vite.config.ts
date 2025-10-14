@@ -11,25 +11,18 @@ export default defineConfig({
     },
   },
   build: {
-    // Otimizações para reduzir uso de memória
-    sourcemap: process.env.VITE_DISABLE_SOURCEMAPS !== 'true',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs em produção
-      },
-    },
     rollupOptions: {
       output: {
-        // Reduz tamanho dos chunks
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          wagmi: ['@wagmi/core', '@wagmi/connectors', 'wagmi', 'viem'],
-          fuel: ['fuels', '@fuels/react', '@fuels/connectors'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return id
+              .toString()
+              .split('node_modules/')[1]
+              .split('/')[0]
+              .toString();
+          }
         },
       },
     },
-    // Reduz uso de memória durante build
-    chunkSizeWarningLimit: 1000,
   },
 });
