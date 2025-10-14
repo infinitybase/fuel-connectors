@@ -11,15 +11,39 @@ export function DynamicListener() {
   const { setShowAuthFlow, primaryWallet, user, handleLogOut } =
     useDynamicContext();
 
-  // Escuta: openDynamicAuth → abre modal
+  // Escuta: openDynamicAuth → abre modal ou retorna sessão existente
   useEffect(() => {
     const handler = () => {
       console.log('[Listener] openDynamicAuth received');
-      setShowAuthFlow(true);
+
+      // Se usuário já está autenticado, não precisa abrir modal
+      if (primaryWallet && user) {
+        console.log(
+          '[Listener] User already authenticated, dispatching wallet ready immediately',
+        );
+
+        primaryWallet.connector
+          .getAddress()
+          .then((address) => {
+            window.dispatchEvent(
+              new CustomEvent('dynamicWalletReady', {
+                detail: { address, wallet: primaryWallet, user },
+              }),
+            );
+          })
+          .catch((err) => {
+            console.error('[Listener] Failed to get address:', err);
+            // Se falhou, abrir modal para reautenticar
+            setShowAuthFlow(true);
+          });
+      } else {
+        // Usuário não autenticado, abrir modal
+        setShowAuthFlow(true);
+      }
     };
     window.addEventListener('openDynamicAuth', handler);
     return () => window.removeEventListener('openDynamicAuth', handler);
-  }, [setShowAuthFlow]);
+  }, [setShowAuthFlow, primaryWallet, user]);
 
   // Escuta: requestDynamicLogout → faz logout
   useEffect(() => {
