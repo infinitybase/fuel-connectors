@@ -6,11 +6,11 @@ import {
   type PredicateVersion,
   type PredicateWalletAdapter,
   type ProviderDictionary,
-} from '@fuels/connectors';
-import { Address, type ConnectorMetadata, Provider } from 'fuels';
+} from "@fuels/connectors";
+import { Address, type ConnectorMetadata, Provider } from "fuels";
 
 // Prefixo para todas as chaves do localStorage deste connector
-const STORAGE_PREFIX = 'SOCIAL_';
+const STORAGE_PREFIX = "SOCIAL_";
 
 // Chaves de armazenamento com prefixo
 const STORAGE_KEYS = {
@@ -27,16 +27,16 @@ type SocialConnectorConfig = ConnectorConfig & {
 };
 
 export class SocialConnector extends PredicateConnector {
-  name = 'Social Connector (Local)';
+  name = "Social Connector (Local)";
   metadata: ConnectorMetadata = {
     image: {
-      light: '',
-      dark: '',
+      light: "",
+      dark: "",
     },
     install: {
-      action: 'Connect',
-      description: 'Login with Google/Email via Dynamic (local stub)',
-      link: '',
+      action: "Connect",
+      description: "Login with Google/Email via Dynamic (local stub)",
+      link: "",
     },
   };
 
@@ -50,13 +50,13 @@ export class SocialConnector extends PredicateConnector {
     this.config = config;
 
     // Restaurar endereço do localStorage ao inicializar
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
         console.log(
-          '[SocialConnector] Restored address from storage:',
-          savedAddress,
+          "[SocialConnector] Restored address from storage:",
+          savedAddress
         );
       }
     }
@@ -67,7 +67,7 @@ export class SocialConnector extends PredicateConnector {
     if (!this.fuelProvider) {
       this.fuelProvider =
         this.config.fuelProvider ??
-        new Provider('https://mainnet.fuel.network');
+        new Provider("https://mainnet.fuel.network");
     }
   }
 
@@ -75,7 +75,7 @@ export class SocialConnector extends PredicateConnector {
     if (!this.fuelProvider) {
       await this._config_providers(this.config);
     }
-    if (!this.fuelProvider) throw new Error('Fuel provider not configured');
+    if (!this.fuelProvider) throw new Error("Fuel provider not configured");
     return { fuelProvider: this.fuelProvider };
   }
 
@@ -85,13 +85,13 @@ export class SocialConnector extends PredicateConnector {
 
   protected async requireConnection(): Promise<void> {
     // Tentar restaurar conexão do localStorage se não houver endereço
-    if (!this.evmAddress && typeof window !== 'undefined') {
+    if (!this.evmAddress && typeof window !== "undefined") {
       const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
         console.log(
-          '[SocialConnector] Auto-reconnected from storage:',
-          savedAddress,
+          "[SocialConnector] Auto-reconnected from storage:",
+          savedAddress
         );
 
         // Emitir evento de reconexão
@@ -112,53 +112,53 @@ export class SocialConnector extends PredicateConnector {
       // Verificar se já tem conexão restaurada do localStorage
       if (this.evmAddress) {
         console.log(
-          '[SocialConnector] Already have address, skipping auth:',
-          this.evmAddress,
+          "[SocialConnector] Already have address, skipping auth:",
+          this.evmAddress
         );
         // Verificar se Dynamic ainda está autenticado
         const isDynamicReady = await this.checkDynamicStatus();
 
         if (isDynamicReady) {
           console.log(
-            '[SocialConnector] Dynamic session still active, reusing connection',
+            "[SocialConnector] Dynamic session still active, reusing connection"
           );
           return true;
         }
-        console.log('[SocialConnector] Dynamic session expired, need new auth');
+        console.log("[SocialConnector] Dynamic session expired, need new auth");
         // Limpar estado antigo
         this.evmAddress = null;
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           localStorage.removeItem(STORAGE_KEYS.EVM_ADDRESS);
         }
       }
 
-      console.log('SocialConnector: requesting Dynamic auth...');
+      console.log("SocialConnector: requesting Dynamic auth...");
 
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           this.cleanupAuthListener();
-          reject(new Error('Auth timeout after 60s'));
+          reject(new Error("Auth timeout after 60s"));
         }, 60_000);
 
         this.authEventHandler = (e: Event) => {
           const customEvent = e as CustomEvent;
           const { address } = customEvent.detail;
 
-          console.log('Dynamic wallet ready, EVM address:', address);
+          console.log("Dynamic wallet ready, EVM address:", address);
           clearTimeout(timeout);
           this.cleanupAuthListener();
 
           // Emite conta para predicate connector
           this.evmAddress = address;
           if (!this.evmAddress) {
-            reject(new Error('No EVM address received'));
+            reject(new Error("No EVM address received"));
             return;
           }
 
           // Persistir endereço no localStorage
-          if (typeof window !== 'undefined') {
+          if (typeof window !== "undefined") {
             localStorage.setItem(STORAGE_KEYS.EVM_ADDRESS, this.evmAddress);
-            console.log('[SocialConnector] Saved address to storage');
+            console.log("[SocialConnector] Saved address to storage");
           }
 
           const b256 = new Address(this.evmAddress).toB256();
@@ -167,13 +167,13 @@ export class SocialConnector extends PredicateConnector {
           resolve(true);
         };
 
-        window.addEventListener('dynamicWalletReady', this.authEventHandler);
+        window.addEventListener("dynamicWalletReady", this.authEventHandler);
 
         // Dispara evento para abrir modal da Dynamic
-        window.dispatchEvent(new CustomEvent('openDynamicAuth'));
+        window.dispatchEvent(new CustomEvent("openDynamicAuth"));
       });
     } catch (error) {
-      console.error('SocialConnector._connect error:', error);
+      console.error("SocialConnector._connect error:", error);
       this.cleanupAuthListener();
       throw error;
     }
@@ -182,28 +182,28 @@ export class SocialConnector extends PredicateConnector {
   private async checkDynamicStatus(): Promise<boolean> {
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        window.removeEventListener('dynamicStatusResponse', handler);
+        window.removeEventListener("dynamicStatusResponse", handler);
         resolve(false);
       }, 2000); // 2s timeout
 
       const handler = (e: Event) => {
         clearTimeout(timeout);
-        window.removeEventListener('dynamicStatusResponse', handler);
+        window.removeEventListener("dynamicStatusResponse", handler);
         const customEvent = e as CustomEvent;
         const isReady = customEvent.detail?.isAuthenticated || false;
         resolve(isReady);
       };
 
-      window.addEventListener('dynamicStatusResponse', handler);
-      window.dispatchEvent(new CustomEvent('checkDynamicStatus'));
+      window.addEventListener("dynamicStatusResponse", handler);
+      window.dispatchEvent(new CustomEvent("checkDynamicStatus"));
     });
   }
 
   protected async _disconnect(): Promise<boolean> {
-    console.log('SocialConnector: disconnecting...');
+    console.log("SocialConnector: disconnecting...");
 
     // Dispara evento para Dynamic fazer logout
-    window.dispatchEvent(new CustomEvent('dynamicLogout'));
+    window.dispatchEvent(new CustomEvent("dynamicLogout"));
 
     // Limpar TODAS as chaves com prefixo SOCIAL_ do localStorage
     this.clearAllStorageKeys();
@@ -218,7 +218,7 @@ export class SocialConnector extends PredicateConnector {
    * Limpa todas as chaves do localStorage que começam com o prefixo SOCIAL_
    */
   private clearAllStorageKeys(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const keysToRemove: string[] = [];
 
@@ -237,25 +237,25 @@ export class SocialConnector extends PredicateConnector {
     });
 
     console.log(
-      `[SocialConnector] Cleared ${keysToRemove.length} storage keys with prefix ${STORAGE_PREFIX}`,
+      `[SocialConnector] Cleared ${keysToRemove.length} storage keys with prefix ${STORAGE_PREFIX}`
     );
   }
 
   private cleanupAuthListener() {
     if (this.authEventHandler) {
-      window.removeEventListener('dynamicWalletReady', this.authEventHandler);
+      window.removeEventListener("dynamicWalletReady", this.authEventHandler);
       this.authEventHandler = undefined;
     }
   }
 
   protected async _sign_message(message: string): Promise<string> {
     try {
-      console.log('SocialConnector: signing message via Dynamic...', message);
+      console.log("SocialConnector: signing message via Dynamic...", message);
       // Dispara evento para Dynamic assinar mensagem
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          window.removeEventListener('dynamicMessageSigned', handler);
-          reject(new Error('Sign message timeout'));
+          window.removeEventListener("dynamicMessageSigned", handler);
+          reject(new Error("Sign message timeout"));
         }, 60_000);
 
         const handler = (e: Event) => {
@@ -263,25 +263,25 @@ export class SocialConnector extends PredicateConnector {
           const { signature } = customEvent.detail;
 
           clearTimeout(timeout);
-          window.removeEventListener('dynamicMessageSigned', handler);
+          window.removeEventListener("dynamicMessageSigned", handler);
           resolve(signature);
         };
 
-        window.addEventListener('dynamicMessageSigned', handler);
+        window.addEventListener("dynamicMessageSigned", handler);
 
         // Solicita assinatura via evento (mensagem exata, sem modificação)
         window.dispatchEvent(
-          new CustomEvent('requestSignMessage', {
+          new CustomEvent("requestSignMessage", {
             detail: {
               message,
             },
-          }),
+          })
         );
       });
     } catch (error) {
       console.error(
-        'SocialConnector: signing message via Dynamic error:',
-        error,
+        "SocialConnector: signing message via Dynamic error:",
+        error
       );
       throw error;
     }
@@ -305,6 +305,6 @@ export class SocialConnector extends PredicateConnector {
   }
 
   async signMessageCustomCurve(_message: string) {
-    return Promise.reject({ curve: 'secp256k1', signature: '' });
+    return Promise.reject({ curve: "secp256k1", signature: "" });
   }
 }
