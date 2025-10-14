@@ -31,6 +31,26 @@ export function DynamicListener() {
     return () => window.removeEventListener('requestDynamicLogout', handler);
   }, [handleLogOut]);
 
+  // Escuta: checkDynamicStatus → responde se está autenticado
+  useEffect(() => {
+    const handler = () => {
+      const isAuthenticated = !!(primaryWallet && user);
+      console.log('[Listener] Dynamic status check:', {
+        isAuthenticated,
+        hasWallet: !!primaryWallet,
+        hasUser: !!user,
+      });
+
+      window.dispatchEvent(
+        new CustomEvent('dynamicStatusResponse', {
+          detail: { isAuthenticated },
+        }),
+      );
+    };
+    window.addEventListener('checkDynamicStatus', handler);
+    return () => window.removeEventListener('checkDynamicStatus', handler);
+  }, [primaryWallet, user]);
+
   // Monitora: quando wallet disponível → dispara dynamicWalletReady
   useEffect(() => {
     if (primaryWallet && user) {

@@ -101,6 +101,29 @@ export class SocialConnector extends PredicateConnector {
 
   protected async _connect(): Promise<boolean> {
     try {
+      // Verificar se já tem conexão restaurada do localStorage
+      if (this.evmAddress) {
+        console.log(
+          '[SocialConnector] Already have address, skipping auth:',
+          this.evmAddress,
+        );
+        // Verificar se Dynamic ainda está autenticado
+        const isDynamicReady = await this.checkDynamicStatus();
+
+        if (isDynamicReady) {
+          console.log(
+            '[SocialConnector] Dynamic session still active, reusing connection',
+          );
+          return true;
+        }
+        console.log('[SocialConnector] Dynamic session expired, need new auth');
+        // Limpar estado antigo
+        this.evmAddress = null;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+
       console.log('SocialConnector: requesting Dynamic auth...');
 
       return new Promise((resolve, reject) => {
@@ -146,6 +169,26 @@ export class SocialConnector extends PredicateConnector {
       this.cleanupAuthListener();
       throw error;
     }
+  }
+
+  private async checkDynamicStatus(): Promise<boolean> {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        window.removeEventListener('dynamicStatusResponse', handler);
+        resolve(false);
+      }, 2000); // 2s timeout
+
+      const handler = (e: Event) => {
+        clearTimeout(timeout);
+        window.removeEventListener('dynamicStatusResponse', handler);
+        const customEvent = e as CustomEvent;
+        const isReady = customEvent.detail?.isAuthenticated || false;
+        resolve(isReady);
+      };
+
+      window.addEventListener('dynamicStatusResponse', handler);
+      window.dispatchEvent(new CustomEvent('checkDynamicStatus'));
+    });
   }
 
   protected async _disconnect(): Promise<boolean> {
