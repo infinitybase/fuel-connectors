@@ -15,11 +15,11 @@ import {
 
 import {
   BakoProvider,
+  SignatureService,
   TypeUser,
   type UsedPredicateVersions,
   Vault,
   Wallet,
-  encodeSignature,
   getLatestPredicateVersion,
   legacyConnectorVersion,
 } from 'bakosafe';
@@ -177,9 +177,11 @@ export abstract class PredicateConnector extends FuelConnector {
       const { tx, hashTxId, encodedTxId } =
         await vault.BakoTransfer(transaction);
 
-      console.log('[CONNECTOR] Encoding transaction:', encodedTxId, hashTxId);
-      const signature = await this._sign_message(hashTxId);
-      const encodedSignature = encodeSignature(
+      // TODO: usar constante com nome do Social Connector
+      const messageToSign =
+        this.name === 'Social Connector (Local)' ? hashTxId : encodedTxId;
+      const signature = await this._sign_message(messageToSign);
+      const encodedSignature = SignatureService.encode(
         evmAddress,
         signature,
         vault.version,
