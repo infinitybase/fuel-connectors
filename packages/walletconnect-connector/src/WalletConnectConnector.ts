@@ -12,21 +12,17 @@ import {
   type ConnectorMetadata,
   FuelConnectorEventTypes,
   Provider as FuelProvider,
-  LocalStorage,
   type StartConsolidateCoins,
-  type StorageAbstract,
 } from 'fuels';
 
 import {
   type EIP1193Provider,
   EthereumWalletAdapter,
-  HAS_WINDOW,
   type Maybe,
   PredicateConnector,
   type PredicateVersion,
   type PredicateWalletAdapter,
   type ProviderDictionary,
-  WINDOW,
   getFuelPredicateAddresses,
   getOrThrow,
   getProviderUrl,
@@ -34,7 +30,7 @@ import {
 
 import { ApiController } from '@web3modal/core';
 import { stringToHex } from 'viem';
-import { ETHEREUM_ICON } from './constants';
+import { ETHEREUM_ICON, HAS_WINDOW, WINDOW } from './constants';
 import type { WalletConnectConfig } from './types';
 import { getPredicateVersions, subscribeAndEnforceChain } from './utils';
 import { createWagmiConfig, createWeb3ModalInstance } from './web3Modal';
@@ -55,13 +51,10 @@ export class WalletConnectConnector extends PredicateConnector {
   private fuelProvider!: FuelProvider;
   private ethProvider!: EIP1193Provider;
   private web3Modal!: Web3Modal;
-  private storage: StorageAbstract;
   private config: WalletConnectConfig = {} as WalletConnectConfig;
 
   constructor(config: WalletConnectConfig) {
     super();
-    this.storage =
-      config.storage || new LocalStorage(WINDOW?.localStorage as Storage);
     const wagmiConfig = config?.wagmiConfig ?? createWagmiConfig();
 
     if (wagmiConfig._internal.syncConnectedChain !== false) {

@@ -1,11 +1,7 @@
 import type { EventEmitter } from 'node:events';
 import { type Socket, io } from 'socket.io-client';
 
-export const SOCKET_URL = 'https://api.bako.global';
-export const APP_URL = 'https://safe.bako.global';
-
-export const HAS_WINDOW = typeof window !== 'undefined';
-export const WINDOW: Window | Record<string, never> = HAS_WINDOW ? window : {};
+import { APP_URL, SOCKET_URL, WINDOW } from './constants';
 
 export enum BakoSafeConnectorEvents {
   DEFAULT = 'message',
@@ -63,7 +59,7 @@ export interface IResponseAuthConfirmed {
 const DEFAULT_SOCKET_AUTH: Omit<ISocketAuth, 'sessionId'> = {
   username: BakoSafeUsernames.CONNECTOR,
   data: new Date(),
-  origin: WINDOW.origin ?? APP_URL,
+  origin: WINDOW?.origin ?? APP_URL,
 };
 
 /**
