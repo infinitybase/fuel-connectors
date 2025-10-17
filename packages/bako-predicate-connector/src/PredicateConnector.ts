@@ -176,16 +176,8 @@ export abstract class PredicateConnector extends FuelConnector {
 
       const { tx, hashTxId, encodedTxId } =
         await vault.BakoTransfer(transaction);
-
-      // TODO: usar constante com nome do Social Connector
-      const messageToSign =
-        this.name === 'Social Connector (Local)' ? hashTxId : encodedTxId;
-      const signature = await this._sign_message(messageToSign);
-      const encodedSignature = SignatureService.encode(
-        evmAddress,
-        signature,
-        vault.version,
-      );
+      const signature = await this._sign_message(encodedTxId);
+      const encodedSignature = vault.encodeSignature(evmAddress, signature);
 
       await bakoProvider.signTransaction({
         hash: hashTxId,
