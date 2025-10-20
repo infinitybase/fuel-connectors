@@ -7,7 +7,7 @@ import {
   type PredicateWalletAdapter,
   type ProviderDictionary,
 } from '@fuels/connectors';
-import { Address, type ConnectorMetadata, Provider } from 'fuels';
+import { type ConnectorMetadata, Provider } from 'fuels';
 
 // Prefixo para todas as chaves do localStorage deste connector
 const STORAGE_PREFIX = 'SOCIAL_';
@@ -94,10 +94,6 @@ export class SocialConnector extends PredicateConnector {
           '[SocialConnector] Auto-reconnected from storage:',
           savedAddress,
         );
-
-        // Emitir evento de reconexão
-        const b256 = new Address(this.evmAddress).toB256();
-        this.emitAccountChange(b256, true);
       }
     }
 
@@ -161,9 +157,6 @@ export class SocialConnector extends PredicateConnector {
             localStorage.setItem(STORAGE_KEYS.EVM_ADDRESS, this.evmAddress);
             console.log('[SocialConnector] Saved address to storage');
           }
-
-          const b256 = new Address(this.evmAddress).toB256();
-          this.emitAccountChange(b256, true);
 
           resolve(true);
         };
@@ -268,42 +261,41 @@ export class SocialConnector extends PredicateConnector {
   }
 
   protected async _sign_message(message: string): Promise<string> {
-    try {
+    // Dispara evento para Dynamic assinar mensagem
+    return new Promise((resolve, reject) => {
       console.log('SocialConnector: signing message via Dynamic...', message);
-      // Dispara evento para Dynamic assinar mensagem
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          window.removeEventListener('dynamicMessageSigned', handler);
-          reject(new Error('Sign message timeout'));
-        }, 60_000);
 
-        const handler = (e: Event) => {
-          const customEvent = e as CustomEvent;
-          const { signature } = customEvent.detail;
+      const timeout = setTimeout(() => {
+        window.removeEventListener('dynamicMessageSigned', handler);
+        reject(new Error('Sign message timeout'));
+      }, 60_000);
 
-          clearTimeout(timeout);
-          window.removeEventListener('dynamicMessageSigned', handler);
+      const handler = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        const { signature, error } = customEvent.detail;
+
+        clearTimeout(timeout);
+        window.removeEventListener('dynamicMessageSigned', handler);
+
+        if (error) {
+          console.log('[SOCIAL CONNECTOR]: ', error);
+          const errorMessage = (error as Error).message.includes('rejected')
+            ? 'Signature rejected by user.'
+            : (error as Error).message;
+
+          reject(new Error(errorMessage));
+        } else {
           resolve(signature);
-        };
+        }
+      };
 
-        window.addEventListener('dynamicMessageSigned', handler);
+      window.addEventListener('dynamicMessageSigned', handler);
 
-        // Solicita assinatura via evento (mensagem exata, sem modificação)
-        window.dispatchEvent(
-          new CustomEvent('requestSignMessage', {
-            detail: {
-              message,
-            },
-          }),
-        );
-      });
-    } catch (error) {
-      console.error(
-        'SocialConnector: signing message via Dynamic error:',
-        error,
+      // Solicita assinatura via evento (mensagem exata, sem modificação)
+      window.dispatchEvent(
+        new CustomEvent('requestSignMessage', { detail: { message } }),
       );
-      throw error;
-    }
+    });
   }
 
   protected getWalletAdapter(): PredicateWalletAdapter {
