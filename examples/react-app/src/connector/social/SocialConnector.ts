@@ -206,8 +206,7 @@ export class SocialConnector extends PredicateConnector {
   protected async _disconnect(): Promise<boolean> {
     console.log('SocialConnector: disconnecting...');
 
-    // Dispara evento para Dynamic fazer logout
-    window.dispatchEvent(new CustomEvent('dynamicLogout'));
+    window.dispatchEvent(new CustomEvent('requestDynamicLogout'));
 
     // Limpar TODAS as chaves com prefixo SOCIAL_ do localStorage
     this.clearAllStorageKeys();
