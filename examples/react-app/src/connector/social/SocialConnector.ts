@@ -218,30 +218,16 @@ export class SocialConnector extends PredicateConnector {
   }
 
   /**
-   * Limpa todas as chaves do localStorage que começam com o prefixo SOCIAL_
+   * Limpa todas as chaves do localStorage que tenham relação com este connector
    */
   private clearAllStorageKeys(): void {
     if (typeof window === 'undefined') return;
 
-    const keysToRemove: string[] = [];
-
-    // Iterar por todas as chaves do localStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(STORAGE_PREFIX)) {
-        keysToRemove.push(key);
-      }
-    }
-
-    // Remover todas as chaves encontradas
-    keysToRemove.forEach((key) => {
-      localStorage.removeItem(key);
-      console.log(`[SocialConnector] Removed storage key: ${key}`);
+    Object.values(STORAGE_KEYS).forEach((key) => {
+      window.localStorage.removeItem(key);
     });
 
-    console.log(
-      `[SocialConnector] Cleared ${keysToRemove.length} storage keys with prefix ${STORAGE_PREFIX}`,
-    );
+    console.log('[SocialConnector] Cleared social storage keys with prefix');
   }
 
   private cleanupAuthListener() {
