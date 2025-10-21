@@ -8,7 +8,7 @@ import {
   type ProviderDictionary,
 } from '@fuels/connectors';
 import { type ConnectorMetadata, Provider } from 'fuels';
-import { STORAGE_KEYS } from './constants';
+import { SOCIAL_ICON, STORAGE_KEYS } from './constants';
 
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
@@ -18,15 +18,12 @@ type SocialConnectorConfig = ConnectorConfig & {
 };
 
 export class SocialConnector extends PredicateConnector {
-  name = 'Social Connector (Local)';
+  name = 'Social Login';
   metadata: ConnectorMetadata = {
-    image: {
-      light: '',
-      dark: '',
-    },
+    image: SOCIAL_ICON,
     install: {
       action: 'Connect',
-      description: 'Login with Google/Email via Dynamic (local stub)',
+      description: 'Login with Google/Email via Dynamic',
       link: '',
     },
   };
