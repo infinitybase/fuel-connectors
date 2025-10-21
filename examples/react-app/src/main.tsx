@@ -113,7 +113,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <DynamicContextProvider
         settings={{
           // environmentId: '900fba82-9069-46df-9a1a-ca4e3787ec92',
-          environmentId: '1db47cdc-383c-45e2-af38-7cb8dd8d1e4c',
+          //environmentId: '1db47cdc-383c-45e2-af38-7cb8dd8d1e4c',
+          environmentId: '332b2411-e593-4808-82c8-669a858631e2',
           initialAuthenticationMode: 'connect-and-sign',
           walletConnectors: [EthereumWalletConnectors],
           debugError: true,
