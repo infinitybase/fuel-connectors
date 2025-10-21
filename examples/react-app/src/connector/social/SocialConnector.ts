@@ -280,7 +280,7 @@ export class SocialConnector extends PredicateConnector {
         if (error) {
           console.log('[SOCIAL CONNECTOR]: ', error);
           const errorMessage = (error as Error).message.includes('rejected')
-            ? 'Signature rejected by user.'
+            ? 'User rejected the request'
             : (error as Error).message;
 
           reject(new Error(errorMessage));
