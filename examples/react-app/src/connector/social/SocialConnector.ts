@@ -8,16 +8,7 @@ import {
   type ProviderDictionary,
 } from '@fuels/connectors';
 import { type ConnectorMetadata, Provider } from 'fuels';
-
-// Prefixo para todas as chaves do localStorage deste connector
-const STORAGE_PREFIX = 'SOCIAL_';
-
-// Chaves de armazenamento com prefixo
-const STORAGE_KEYS = {
-  EVM_ADDRESS: `${STORAGE_PREFIX}evm_address`,
-  DYNAMIC_SESSION: `${STORAGE_PREFIX}dynamic_session`,
-  LAST_CONNECTION: `${STORAGE_PREFIX}last_connection`,
-} as const;
+import { STORAGE_KEYS } from './constants';
 
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
