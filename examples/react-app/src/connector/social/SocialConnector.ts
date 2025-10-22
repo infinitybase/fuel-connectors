@@ -8,7 +8,8 @@ import {
   type ProviderDictionary,
 } from '@fuels/connectors';
 import { type ConnectorMetadata, Provider } from 'fuels';
-import { SOCIAL_ICON, STORAGE_KEYS } from './constants';
+import { HAS_WINDOW, SOCIAL_ICON, STORAGE_KEYS } from './constants';
+import { checkClientSessionKey } from './utils/checkDynamicClientSessionKey';
 
 type SocialConnectorConfig = ConnectorConfig & {
   gatewayUrl?: string;
@@ -39,7 +40,7 @@ export class SocialConnector extends PredicateConnector {
     this.config = config;
 
     // Restaurar endereço do localStorage ao inicializar
-    if (typeof window !== 'undefined') {
+    if (HAS_WINDOW) {
       const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
@@ -74,7 +75,7 @@ export class SocialConnector extends PredicateConnector {
 
   protected async requireConnection(): Promise<void> {
     // Tentar restaurar conexão do localStorage se não houver endereço
-    if (!this.evmAddress && typeof window !== 'undefined') {
+    if (!this.evmAddress && HAS_WINDOW) {
       const savedAddress = localStorage.getItem(STORAGE_KEYS.EVM_ADDRESS);
       if (savedAddress) {
         this.evmAddress = savedAddress;
@@ -100,7 +101,7 @@ export class SocialConnector extends PredicateConnector {
           '[SocialConnector] Already have address, skipping auth:',
           this.evmAddress,
         );
-        // Verificar se Dynamic ainda está autenticado
+        // Verificar se Dynamic ainda está autenticado e possui client session key
         const isDynamicReady = await this.checkDynamicStatus();
 
         if (isDynamicReady) {
@@ -109,12 +110,14 @@ export class SocialConnector extends PredicateConnector {
           );
           return true;
         }
+
         console.log('[SocialConnector] Dynamic session expired, need new auth');
-        // Limpar estado antigo
-        this.evmAddress = null;
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(STORAGE_KEYS.EVM_ADDRESS);
-        }
+        // Limpar estado e forçar logout do Dynamic
+        await this._disconnect();
+
+        // Iniciar nova conexão do zero
+        window.dispatchEvent(new CustomEvent('openDynamicAuth'));
+        return false;
       }
 
       console.log('SocialConnector: requesting Dynamic auth...');
@@ -135,7 +138,7 @@ export class SocialConnector extends PredicateConnector {
           }
 
           // Persistir endereço no localStorage
-          if (typeof window !== 'undefined') {
+          if (HAS_WINDOW) {
             localStorage.setItem(STORAGE_KEYS.EVM_ADDRESS, this.evmAddress);
             console.log('[SocialConnector] Saved address to storage');
           }
@@ -169,8 +172,13 @@ export class SocialConnector extends PredicateConnector {
       const handler = (e: Event) => {
         window.removeEventListener('dynamicStatusResponse', handler);
         const customEvent = e as CustomEvent;
-        const isReady = customEvent.detail?.isAuthenticated || false;
-        resolve(isReady);
+        const isAuthenticated = customEvent.detail?.isAuthenticated || false;
+
+        // Verificar se temos as chaves de sessão necessárias
+        const hasSessionClientSessionKey = checkClientSessionKey();
+
+        // Só consideramos a sessão válida se AMBOS forem true
+        resolve(isAuthenticated && hasSessionClientSessionKey);
       };
 
       window.addEventListener('dynamicStatusResponse', handler);
@@ -196,7 +204,7 @@ export class SocialConnector extends PredicateConnector {
    * Limpa todas as chaves do localStorage que tenham relação com este connector
    */
   private clearAllStorageKeys(): void {
-    if (typeof window === 'undefined') return;
+    if (!HAS_WINDOW) return;
 
     Object.values(STORAGE_KEYS).forEach((key) => {
       window.localStorage.removeItem(key);

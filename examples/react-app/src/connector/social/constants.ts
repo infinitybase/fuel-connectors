@@ -5,3 +5,10 @@ const STORAGE_PREFIX = 'social_';
 export const STORAGE_KEYS = {
   EVM_ADDRESS: `${STORAGE_PREFIX}evm_address`,
 } as const;
+
+export const DYNAMIC_KEYS = {
+  CLIENT_SESSION: 'dynamic_client_session_keys',
+} as const;
+
+export const HAS_WINDOW = typeof window !== 'undefined';
+export const WINDOW = HAS_WINDOW ? window : null;
