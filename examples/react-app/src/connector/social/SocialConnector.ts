@@ -120,17 +120,11 @@ export class SocialConnector extends PredicateConnector {
       console.log('SocialConnector: requesting Dynamic auth...');
 
       return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          this.cleanupAuthListener();
-          reject(new Error('Auth timeout after 60s'));
-        }, 60_000);
-
         this.authEventHandler = (e: Event) => {
           const customEvent = e as CustomEvent;
           const { address } = customEvent.detail;
 
           console.log('Dynamic wallet ready, EVM address:', address);
-          clearTimeout(timeout);
           this.cleanupAuthListener();
 
           // Emite conta para predicate connector
@@ -150,7 +144,6 @@ export class SocialConnector extends PredicateConnector {
         };
 
         this.authFlowCloseHandler = () => {
-          clearTimeout(timeout);
           this.cleanupAuthListener();
           reject(new Error('Connection declined!'));
         };
@@ -173,13 +166,7 @@ export class SocialConnector extends PredicateConnector {
 
   private async checkDynamicStatus(): Promise<boolean> {
     return new Promise((resolve) => {
-      const timeout = setTimeout(() => {
-        window.removeEventListener('dynamicStatusResponse', handler);
-        resolve(false);
-      }, 2000); // 2s timeout
-
       const handler = (e: Event) => {
-        clearTimeout(timeout);
         window.removeEventListener('dynamicStatusResponse', handler);
         const customEvent = e as CustomEvent;
         const isReady = customEvent.detail?.isAuthenticated || false;
@@ -238,16 +225,10 @@ export class SocialConnector extends PredicateConnector {
     return new Promise((resolve, reject) => {
       console.log('SocialConnector: signing message via Dynamic...', message);
 
-      const timeout = setTimeout(() => {
-        window.removeEventListener('dynamicMessageSigned', handler);
-        reject(new Error('Sign message timeout'));
-      }, 60_000);
-
       const handler = (e: Event) => {
         const customEvent = e as CustomEvent;
         const { signature, error } = customEvent.detail;
 
-        clearTimeout(timeout);
         window.removeEventListener('dynamicMessageSigned', handler);
 
         if (error) {
