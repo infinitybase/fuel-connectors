@@ -75,28 +75,7 @@ export function DynamicListener() {
     return () => window.removeEventListener('checkDynamicStatus', handler);
   }, [primaryWallet, user]);
 
-  // Monitora: quando wallet disponível → dispara dynamicWalletReady
-  useEffect(() => {
-    if (primaryWallet && user) {
-      console.log('[Listener] Wallet detected, getting address...');
-
-      primaryWallet.connector
-        .getAddress()
-        .then((address) => {
-          console.log('[Listener] Wallet ready, address:', address);
-          window.dispatchEvent(
-            new CustomEvent('dynamicWalletReady', {
-              detail: { address, wallet: primaryWallet, user },
-            }),
-          );
-        })
-        .catch((err) => {
-          console.error('[Listener] Failed to get address:', err);
-        });
-    }
-  }, [primaryWallet, user]);
-
-  // // Escuta: requestSignMessage → assina mensagem
+  // Escuta: requestSignMessage → assina mensagem
   useEffect(() => {
     if (!primaryWallet) return;
 
