@@ -1,3 +1,5 @@
+import type { ConnectorMetadata } from 'fuels';
+
 export const APP_VERSION = '0.0.0';
 export const APP_NETWORK = '0.0.0';
 export const APP_NAME = 'Bako Safe';
@@ -19,5 +21,18 @@ export const WINDOW: any = HAS_WINDOW ? window : {};
 export const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(
   WINDOW.navigator?.userAgent ?? '',
 );
-//storage
+// storage
 export const SESSION_ID = 'sessionId';
+
+// metadata
+export const DEFAULT_METADATA: ConnectorMetadata = {
+  image: {
+    light: APP_IMAGE_LIGHT,
+    dark: APP_IMAGE_DARK,
+  },
+  install: {
+    action: APP_URL,
+    link: APP_URL,
+    description: APP_DESCRIPTION,
+  },
+};

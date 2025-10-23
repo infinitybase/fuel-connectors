@@ -14,13 +14,11 @@ import { BakoStorage } from './BakoSafeStorage';
 import { DAppWindow } from './DAPPWindow';
 import { SocketClient } from './SocketClient';
 import {
-  APP_DESCRIPTION,
-  APP_IMAGE_DARK,
-  APP_IMAGE_LIGHT,
   APP_NAME,
   APP_NETWORK,
   APP_URL,
   APP_VERSION,
+  DEFAULT_METADATA,
   HAS_WINDOW,
   HOST_URL,
   IS_SAFARI,
@@ -36,18 +34,6 @@ import {
 } from './types';
 
 export class BakoSafeConnector extends FuelConnector {
-  name = APP_NAME;
-  metadata = {
-    image: {
-      light: APP_IMAGE_LIGHT,
-      dark: APP_IMAGE_DARK,
-    },
-    install: {
-      action: APP_URL,
-      link: APP_URL,
-      description: APP_DESCRIPTION,
-    },
-  };
   installed = !IS_SAFARI;
   connected = false;
   external = false;
@@ -68,6 +54,8 @@ export class BakoSafeConnector extends FuelConnector {
     this.api = config?.api ?? new RequestAPI(this.host);
     this.storage = this.getStorage(config?.storage);
     this.setupReady = false;
+    this.name = config?.name ?? APP_NAME;
+    this.metadata = config?.metadata ?? DEFAULT_METADATA;
   }
 
   // ============================================================
@@ -138,6 +126,7 @@ export class BakoSafeConnector extends FuelConnector {
       width: 450,
       appUrl: this.appUrl,
       request_id: this.socket.request_id,
+      connector_type: this.name,
     });
 
     await this.requestConnectionState();
