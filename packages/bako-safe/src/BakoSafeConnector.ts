@@ -32,6 +32,7 @@ import {
   type IResponseAuthConfirmed,
   type IResponseTxCofirmed,
 } from './types';
+import { toSnakeCase } from './utils';
 
 export class BakoSafeConnector extends FuelConnector {
   installed = !IS_SAFARI;
@@ -71,10 +72,11 @@ export class BakoSafeConnector extends FuelConnector {
   }
 
   private async getSessionId() {
-    let sessionId: string = (await this.storage?.getItem(SESSION_ID)) || '';
+    const sessionIdKey = `${toSnakeCase(this.name)}_${SESSION_ID}`;
+    let sessionId: string = (await this.storage?.getItem(sessionIdKey)) || '';
     if (!sessionId) {
       sessionId = crypto.randomUUID();
-      await this.storage?.setItem(SESSION_ID, sessionId);
+      await this.storage?.setItem(sessionIdKey, sessionId);
     }
     return sessionId;
   }

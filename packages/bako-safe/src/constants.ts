@@ -22,7 +22,7 @@ export const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(
   WINDOW.navigator?.userAgent ?? '',
 );
 // storage
-export const SESSION_ID = 'sessionId';
+export const SESSION_ID = 'session_id';
 
 // metadata
 export const DEFAULT_METADATA: ConnectorMetadata = {
