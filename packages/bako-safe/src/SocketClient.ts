@@ -19,7 +19,7 @@ const DEFAULT_SOCKET_AUTH: Omit<ISocketAuth, 'sessionId'> = {
 };
 
 export class SocketClient {
-  private static instance: SocketClient | null = null;
+  private static instances = new Map<string, SocketClient>();
   private connecting = false;
   server: Socket;
   events: BakoSafeConnector;
@@ -80,11 +80,14 @@ export class SocketClient {
   }
 
   static create(options: ICreateClientSocket) {
-    if (!SocketClient.instance) {
-      SocketClient.instance = new SocketClient(options);
-    }
+    const existingInstanceBySessionId = SocketClient.instances.get(
+      options.sessionId,
+    );
+    if (existingInstanceBySessionId) return existingInstanceBySessionId;
 
-    return SocketClient.instance;
+    const instance = new SocketClient(options);
+    SocketClient.instances.set(options.sessionId, instance);
+    return instance;
   }
 
   connect(): void {

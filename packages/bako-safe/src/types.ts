@@ -1,4 +1,8 @@
-import type { StorageAbstract, TransactionRequestLike } from 'fuels';
+import type {
+  ConnectorMetadata,
+  StorageAbstract,
+  TransactionRequestLike,
+} from 'fuels';
 import type { BakoSafeConnector } from './BakoSafeConnector';
 import type { RequestAPI } from './request';
 
@@ -37,6 +41,8 @@ export type BakoSafeConnectorConfig = {
   appUrl?: string;
   storage?: StorageAbstract;
   api?: RequestAPI;
+  name?: string;
+  metadata?: ConnectorMetadata;
 };
 
 export interface ISocketAuth {

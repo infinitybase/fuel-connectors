@@ -6,6 +6,7 @@ type PopupConfig = {
   width: number;
   sessionId: string;
   request_id: string;
+  connector_type: string;
 };
 
 export class DAppWindow {
@@ -120,8 +121,12 @@ export class DAppWindow {
   }
 
   private get queryString() {
-    const { sessionId } = this.config;
-    return `?sessionId=${sessionId}&origin=${WINDOW.location.origin}&name=${WINDOW.document.title}&request_id=${this.request_id}`;
+    const { sessionId, connector_type } = this.config;
+    return `?sessionId=${sessionId}&origin=${WINDOW.location.origin}&name=${
+      WINDOW.document.title
+    }&request_id=${this.request_id}&connector_type=${encodeURIComponent(
+      connector_type,
+    )}`;
   }
 
   private get small() {

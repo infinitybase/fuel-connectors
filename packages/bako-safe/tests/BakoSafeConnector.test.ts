@@ -3,7 +3,13 @@ import { describe, expect, test } from 'vitest';
 import { Address, type Asset, type JsonAbi, type StorageAbstract } from 'fuels';
 import { BakoSafeConnector } from '../src/BakoSafeConnector';
 import { BakoStorage } from '../src/BakoSafeStorage';
-import { APP_NAME, APP_NETWORK, APP_VERSION } from '../src/constants';
+import {
+  APP_NAME,
+  APP_NETWORK,
+  APP_VERSION,
+  SESSION_ID,
+} from '../src/constants';
+import { toSnakeCase } from '../src/utils';
 import { MockedRequestAPI } from './mocks/api';
 import { CURRENT_NETWORK, STATE } from './mocks/constantes';
 
@@ -78,7 +84,8 @@ describe('currentNetwork()', () => {
 describe('isConnected()', () => {
   test('return connection state', async () => {
     const storage: StorageAbstract = new BakoStorage();
-    await storage.setItem('sessionId', 'fake_session_id');
+    const sessionIdKey = `${toSnakeCase(APP_NAME)}_${SESSION_ID}`;
+    await storage.setItem(sessionIdKey, 'fake_session_id');
 
     const connector = new BakoSafeConnector({
       api: new MockedRequestAPI(),

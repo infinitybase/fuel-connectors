@@ -1,3 +1,5 @@
+import type { ConnectorMetadata } from 'fuels';
+
 export const APP_VERSION = '0.0.0';
 export const APP_NETWORK = '0.0.0';
 export const APP_NAME = 'Bako Safe';
@@ -8,9 +10,9 @@ export const APP_IMAGE_DARK =
 export const APP_IMAGE_LIGHT =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iOCIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzEzMjQ5XzE2MjI4MCkiLz4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzEzMjQ5XzE2MjI4MCkiPgo8cGF0aCBkPSJNMTMgMjUuOTE2N0wzNyAzNy44NjcxTDI1LjAwMjQgMTguOTg5M0wxMyAyNS45MTY3WiIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNMzMuODg2NCAyMi4yMTgyTDI0Ljk5NzYgMTcuMDg2NVY1LjEzNTc0TDEzIDEyLjA2MjhWMjUuOTE2TDI0Ljk5NzYgMTguOTg4OVYzMC45Mzk2TDEzIDM3Ljg2NjhMMjQuOTk3NiA0NC43OTM4TDM2Ljk5NTIgMzcuODY2OFYyNy42MDMzQzM2Ljk5NTIgMjUuMzgxNiAzNS44MDk4IDIzLjMyOTEgMzMuODg2NCAyMi4yMTgyWiIgZmlsbD0iIzFFMUYyMiIvPgo8L2c+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9InBhaW50MF9saW5lYXJfMTMyNDlfMTYyMjgwIiB4MT0iMCIgeTE9IjAiIHgyPSI1Mi4zMjg1IiB5Mj0iNDcuNDMxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNGRkMwMTAiLz4KPHN0b3Agb2Zmc2V0PSIwLjQ4IiBzdG9wLWNvbG9yPSIjRUJBMzEyIi8+CjxzdG9wIG9mZnNldD0iMC43MSIgc3RvcC1jb2xvcj0iI0QzODAxNSIvPgo8c3RvcCBvZmZzZXQ9IjAuOTkiIHN0b3AtY29sb3I9IiNCMjRGMTgiLz4KPC9saW5lYXJHcmFkaWVudD4KPGNsaXBQYXRoIGlkPSJjbGlwMF8xMzI0OV8xNjIyODAiPgo8cmVjdCB3aWR0aD0iMjQiIGhlaWdodD0iNDAiIGZpbGw9IndoaXRlIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMyA1KSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=';
 
-export const APP_URL = 'https://safe.bako.global';
-export const HOST_URL = 'https://api.bako.global';
-export const SOCKET_URL = 'https://api.bako.global';
+export const APP_URL = 'https://stg-safe.bako.global';
+export const HOST_URL = 'https://stg-api.bako.global';
+export const SOCKET_URL = 'https://stg-api.bako.global';
 
 // Window object
 export const HAS_WINDOW = typeof window !== 'undefined';
@@ -19,5 +21,18 @@ export const WINDOW: any = HAS_WINDOW ? window : {};
 export const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(
   WINDOW.navigator?.userAgent ?? '',
 );
-//storage
-export const SESSION_ID = 'sessionId';
+// storage
+export const SESSION_ID = 'session_id';
+
+// metadata
+export const DEFAULT_METADATA: ConnectorMetadata = {
+  image: {
+    light: APP_IMAGE_LIGHT,
+    dark: APP_IMAGE_DARK,
+  },
+  install: {
+    action: APP_URL,
+    link: APP_URL,
+    description: APP_DESCRIPTION,
+  },
+};
