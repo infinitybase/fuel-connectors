@@ -16,7 +16,6 @@ interface GroupedConnectors {
 const ALLOWED_MOBILE_CONNECTORS = [
   'Fuelet Wallet',
   'Burner Wallet',
-  'Ethereum Wallets',
   'Solana Wallets',
 ];
 
