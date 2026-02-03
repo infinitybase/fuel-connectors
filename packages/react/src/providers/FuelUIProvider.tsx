@@ -15,6 +15,7 @@ import {
 
 import { useConnect } from '../hooks/useConnect';
 import { useConnectors } from '../hooks/useConnectors';
+import { usePrivyReady } from '../hooks/usePrivyReady';
 
 import { NATIVE_CONNECTORS } from '../config';
 import { useIsConnected } from '../hooks';
@@ -27,6 +28,7 @@ export type FuelUIProviderProps = {
   uiConfig: UIConfig;
   fuelConfig: FuelConfig;
   theme?: 'dark' | 'light';
+  socialLogin?: boolean;
 };
 
 export enum Routes {
@@ -107,6 +109,7 @@ export function FuelUIProvider({
   children,
   theme,
   uiConfig,
+  socialLogin = false,
 }: FuelUIProviderProps) {
   const { fuel } = useFuel();
   const { isPending: isConnecting, isError, connectAsync } = useConnect();
@@ -114,6 +117,7 @@ export function FuelUIProvider({
     query: { select: sortConnectors },
   });
   const { isConnected } = useIsConnected();
+  const { ready } = usePrivyReady();
   const [connector, setConnector] = useState<FuelConnector | null>(null);
   const [dialogRoute, setDialogRoute] = useState<Routes>(Routes.List);
   const [isOpen, setOpen] = useState(false);
@@ -191,8 +195,9 @@ export function FuelUIProvider({
   const isLoading = useMemo(() => {
     const hasLoadedConnectors =
       (fuelConfig.connectors || []).length > connectors.length;
-    return isLoadingConnectors || hasLoadedConnectors;
-  }, [connectors, isLoadingConnectors, fuelConfig]);
+    const isLoadingPrivy = socialLogin && !ready;
+    return isLoadingConnectors || hasLoadedConnectors || isLoadingPrivy;
+  }, [connectors, isLoadingConnectors, fuelConfig, ready, socialLogin]);
 
   const handleConnect = useCallback(() => {
     setConnector(null);

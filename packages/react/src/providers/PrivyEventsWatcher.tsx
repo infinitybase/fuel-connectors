@@ -10,8 +10,10 @@ import {
 } from '@privy-io/react-auth';
 
 import type { FuelConnector } from 'fuels';
+import { PRIVY_UPDATE_STATE_TIMEOUT_MS } from '../constants/privy';
 import { useFuel } from './FuelHooksProvider';
 import { PrivyAuthObserver } from './PrivyAuthObserver';
+import { privyStateManager } from './PrivyStateManager';
 
 /**
  * Synchronizes Privy auth state with connectors via the IPrivyAuthObserver interface.
@@ -129,6 +131,18 @@ export function PrivyEventsWatcher() {
     observerRef.current.setUser(privy.user ?? undefined);
     observerRef.current.setEmbeddedWallet(embeddedWallet);
   }, [privy.authenticated, privy.ready, privy.user, embeddedWallet]);
+
+  // Effect 3: Update state manager so usePrivyReady hook can react to changes
+  // The timeout needs to be longer than useIsConnected() refetch interval to avoid enable "Connect Wallet" button
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      privyStateManager.updateState({
+        ready: privy.ready,
+      });
+    }, PRIVY_UPDATE_STATE_TIMEOUT_MS);
+
+    return () => clearTimeout(timeout);
+  }, [privy.ready]);
 
   return null;
 }

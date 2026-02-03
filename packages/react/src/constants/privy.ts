@@ -13,3 +13,5 @@ export const PRIVY_CONFIG: PrivyClientConfig = {
     },
   },
 };
+
+export const PRIVY_UPDATE_STATE_TIMEOUT_MS = 1100;

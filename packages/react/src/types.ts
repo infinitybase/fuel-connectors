@@ -51,8 +51,13 @@ export type PrivySignMessage = (
   signature: string;
 }>;
 
-/** Configuration for Social Login via Privy */
 export type PrivyConfig = {
   appId: string;
   config: PrivyClientConfig;
 };
+
+export type PrivyState = {
+  ready: boolean;
+};
+
+export type PrivyStateChangeListener = (state: PrivyState) => void;

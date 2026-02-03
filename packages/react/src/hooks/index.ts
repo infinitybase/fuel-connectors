@@ -24,3 +24,4 @@ export * from './useWallet';
 export * from './useCurrentConnector';
 export * from './useIsSupportedNetwork';
 export * from './useChainId';
+export * from './usePrivyReady';

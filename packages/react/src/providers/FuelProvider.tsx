@@ -53,7 +53,7 @@ export function FuelProvider({
   uiConfig: _uiConfig,
   ui = true,
   networks: _networks,
-  socialLogin: _socialLogin,
+  socialLogin: _socialLogin = false,
 }: FuelProviderProps) {
   const theme = _theme || 'light';
   const { networks } = useNetworkConfigs(_networks);
@@ -82,6 +82,7 @@ export function FuelProvider({
             theme={theme}
             fuelConfig={fuelConfig}
             uiConfig={uiConfig}
+            socialLogin={_socialLogin}
           >
             <Connect />
             <NetworkDialog theme={theme} />
