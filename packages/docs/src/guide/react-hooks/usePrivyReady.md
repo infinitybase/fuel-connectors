@@ -11,6 +11,6 @@ Works without Context by using a singleton state manager.
 Current Privy state (ready)
 
 #### Defined in
-packages/react/src/hooks/usePrivyReady.ts:13
+[packages/react/src/hooks/usePrivyReady.ts:13](https://github.com/fuellabs/fuel-connectors/blob/main/packages/react/src/hooks/usePrivyReady.ts#L13)
 
 ___
