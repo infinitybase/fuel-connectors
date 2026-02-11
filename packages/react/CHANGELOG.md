@@ -1,5 +1,27 @@
 # @fuels/react
 
+## 0.46.0
+
+### Minor Changes
+
+- [`9eb007c`](https://github.com/FuelLabs/fuel-connectors/commit/9eb007cb0a49ce2a58b0cfadb48e0a8021a84866) Thanks [@pedroanastacio](https://github.com/pedroanastacio)! - refactor: Move Privy provider to @fuels/react package
+
+  - Add `PrivyInternalProvider` component for managing Privy app initialization and configuration
+  - Add `PrivyEventsWatcher` component for monitoring Privy authentication state changes
+  - Implement `PrivyAuthObserver` for subscribing to Privy login/logout events
+  - Add Privy type definitions and configuration constants to `@fuels/react`
+  - Export Privy types from `@fuel-connectors/common`: `PrivyAuthEventTypes` enum and `IPrivyAuthObserver` interface
+  - Simplify `FuelProvider` to conditionally render Privy providers based on `socialLogin` configuration
+  - Improve provider hierarchy and separation of concerns
+
+- [`24f5464`](https://github.com/FuelLabs/fuel-connectors/commit/24f54645755ed1e137ffe55405c41a4dedd53526) Thanks [@guimroque](https://github.com/guimroque)! - feat: Add social login connector via Privy
+
+  - Add new `@fuel-connectors/social-connector` package for social authentication (Google/Email) via Privy
+  - Extends `PredicateConnector` from `bako-predicate-connector` to leverage Bako Safe integration
+  - Export `SocialConnector` and types from `@fuels/connectors` bundle
+  - Move Privy provider configuration to `@fuels/react` package with `PrivyInternalProvider` and `PrivyEventsWatcher` utilities
+  - Add Privy as a peer dependency in `@fuels/react`
+
 ## 0.45.0
 
 ### Minor Changes
