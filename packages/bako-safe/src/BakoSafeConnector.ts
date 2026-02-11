@@ -152,6 +152,8 @@ export class BakoSafeConnector extends FuelConnector {
       this.socket.server.once(
         BakoSafeConnectorEvents.CONNECTION_STATE,
         async ({ data }: { data: boolean }) => {
+          console.log('[CONNECTION STATE] Event: ', data);
+
           this.connected = data;
           this.emit(this.events.connection, data);
           resolve();
@@ -183,6 +185,8 @@ export class BakoSafeConnector extends FuelConnector {
       this.once(
         BakoSafeConnectorEvents.AUTH_CONFIRMED,
         async ({ data }: { data: IResponseAuthConfirmed }) => {
+          console.log('[AUTH CONFIRMED] Event: ', data);
+
           await this.requestConnectionState();
 
           this.emit(this.events.accounts, await this.accounts());
