@@ -1,6 +1,6 @@
 {
   "name": "@fuel-connectors/social-connector",
-  "version": "0.0.1",
+  "version": "0.46.0",
   "private": true,
   "files": ["dist"],
   "main": "./dist/index.js",

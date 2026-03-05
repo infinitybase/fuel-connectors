@@ -1,5 +1,7 @@
 # @fuel-connectors/e2e-tests
 
+## 0.46.0
+
 ## 0.45.0
 
 ### Minor Changes

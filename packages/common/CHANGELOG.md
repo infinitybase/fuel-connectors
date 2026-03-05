@@ -1,5 +1,19 @@
 # @fuel-connectors/common
 
+## 0.46.0
+
+### Patch Changes
+
+- [`9eb007c`](https://github.com/FuelLabs/fuel-connectors/commit/9eb007cb0a49ce2a58b0cfadb48e0a8021a84866) Thanks [@pedroanastacio](https://github.com/pedroanastacio)! - refactor: Move Privy provider to @fuels/react package
+
+  - Add `PrivyStack` component for managing Privy app initialization and configuration
+  - Add `PrivyEventsWatcher` component for monitoring Privy authentication state changes
+  - Implement `PrivyAuthObserver` for subscribing to Privy login/logout events
+  - Add Privy type definitions and configuration constants to `@fuels/react`
+  - Export Privy types from `@fuel-connectors/common`: `PrivyAuthEventTypes` enum and `IPrivyAuthObserver` interface
+  - Simplify `FuelProvider` to conditionally render Privy providers based on `socialLogin` configuration
+  - Improve provider hierarchy and separation of concerns
+
 ## 0.45.0
 
 ### Minor Changes
